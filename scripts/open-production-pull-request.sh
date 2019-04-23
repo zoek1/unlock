@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
 
 # This script gets the git history as by default CircleCI will only get the most recent commit.
-git config --replace-all remote.origin.fetch +refs/heads/*:refs/remotes/origin/*
-git fetch >> /dev/null
+# git config --replace-all remote.origin.fetch +refs/heads/*:refs/remotes/origin/*
+# git fetch >> /dev/null
 
-echo "Checking master out 4 days ago"
-STABLE_MASTER=`git rev-list -1 --before={4.days.ago} master`
-git checkout $STABLE_MASTER
+# echo "Setting up git"
+# git config --global user.email "ops@unlock-protocol.com"
+# git config --global user.name "Unlock Deployer"
+
+# echo "Checking master out 4 days ago"
+# STABLE_MASTER=`git rev-list -1 --before={4.days.ago} master`
+# git checkout $STABLE_MASTER
 
 echo "Creating new production branch"
 BRANCH="production-$(date +%Y%m%d-%H%M%S)"
@@ -20,11 +24,17 @@ echo "Committing diff"
 COMMIT_MESSAGE="Automated deploy between $LATEST_PRODUCTION and $STABLE_MASTER"
 git commit -m "$COMMIT_MESSAGE" -a --no-verify
 
-echo "Push new production branch"
+# echo "Push new production branch"
 git push origin $BRANCH --no-verify
 
 echo "Open pull request"
-PR_TITLE="Production Automated Deploy $BRANCH"
+
+PR_TITLE="Another Production Automated Deploy $BRANCH 2"
+
+GITHUB_API_TOKEN=a02266837c7261262fb50900eb4112d5575ddb5b
+GITHUB_API_USER=julien51
+
 curl --fail -u $GITHUB_API_USER:$GITHUB_API_TOKEN -H "Content-Type:application/json" -X POST -d "{\"title\":\"$PR_TITLE\",\"base\":\"production\",\"head\":\"$BRANCH\"}" https://api.github.com/repos/unlock-protocol/unlock/pulls
 
 
+git co master
