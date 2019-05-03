@@ -6,11 +6,13 @@ const serverIsUp = require('./serverIsUp')
 const unlockPort = process.env.UNLOCK_PORT || 3000
 const locksmithPort = process.env.LOCKSMITH_PORT || 8080
 const paywallPort = process.env.PAYWALL_PORT || 3001
+const ticketsPort = process.env.TICKETS_PORT || 3003
 const ci = process.env.CI
 
 const unlockHost = ci ? 'unlock-app' : '127.0.0.1'
 const locksmithHost = ci ? 'locksmith' : '127.0.0.1'
 const paywallHost = ci ? 'paywall' : '127.0.0.1'
+const ticketsHost = ci ? 'tickets' : '127.0.0.1'
 
 class UnlockEnvironment extends PuppeteerEnvironment {
   async setup() {
@@ -33,6 +35,13 @@ class UnlockEnvironment extends PuppeteerEnvironment {
     await serverIsUp(
       paywallHost,
       paywallPort,
+      1000 /* every s */,
+      120 /* up to 2m */
+    )
+    console.log('Waiting for Tickets')
+    await serverIsUp(
+      ticketsHost,
+      ticketsPort,
       1000 /* every s */,
       120 /* up to 2m */
     )

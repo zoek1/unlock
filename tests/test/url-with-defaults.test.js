@@ -1,6 +1,7 @@
 delete process.env.UNLOCK_HOST
 delete process.env.UNLOCK_PORT
 delete process.env.PAYWALL_URL
+delete process.env.UNLOCK_TICKETS_URL
 const url = require('../helpers/url')
 
 describe('url test helper, default values', () => {
@@ -14,5 +15,11 @@ describe('url test helper, default values', () => {
     expect.assertions(2)
     expect(url.paywall()).toBe('http://127.0.0.1:3001/')
     expect(url.paywall('/path')).toBe('http://127.0.0.1:3001/path')
+  })
+
+  it('tickets', () => {
+    expect.assertions(2)
+    expect(url.paywall()).toBe('http://127.0.0.1:3003/')
+    expect(url.paywall('/path')).toBe('http://127.0.0.1:3003/path')
   })
 })

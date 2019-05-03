@@ -34,6 +34,7 @@ what is being rendered on screen.
 - run the dashboard application (in `/unlock-app`): `npm run start` (you may need to build the application first: `npm run build`)
 - run the locksmith application (in `/locksmith`): `npm run start`
 - run the paywall application (in `/paywall`): `npm run start` (you may need to build the application first: `npm run build`)
+- run the tickets application (in `/tickets`): `npm run start` (you may need to build the application first: `npm run build`)
 - execute the tests (in `/tests`): `npm run test`
 
 There are a few interesting and useful debugging options [on this page](https://github.com/GoogleChrome/puppeteer#debugging-tips) including
