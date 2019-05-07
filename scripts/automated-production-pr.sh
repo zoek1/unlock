@@ -8,8 +8,8 @@ git config --replace-all remote.origin.fetch +refs/heads/*:refs/remotes/origin/*
 git fetch >> /dev/null
 
 # get the timestamp of the latests commit to be deployed
-STABLE_MASTER=`git rev-list -1 --before={4.days.ago} master`
-STABLE_MASTER_TIMESTAMP=`git show -s --format=%ct $STABLE_MASTER`
+COMMIT_TO_DEPLOY=`git rev-list -1 --before={4.days.ago} master`
+COMMIT_TO_DEPLOY_TIMESTAMP=`git show -s --format=%ct $COMMIT_TO_DEPLOY`
 
 # Get the timestamp of the latest commit deployed
 # For this we need to parse the commit message of the latest production commit
@@ -30,11 +30,11 @@ fi
 
 LATEST_PRODUCTION_TIMESTAMP=`git show -s --format=%ct $LATEST_COMMIT_ID_IN_PRODUCTION`
 
-if [[ $((STABLE_MASTER_TIMESTAMP)) < $((LATEST_PRODUCTION_TIMESTAMP)) ]]
+if [[ $((COMMIT_TO_DEPLOY_TIMESTAMP)) < $((LATEST_PRODUCTION_TIMESTAMP)) ]]
 then
-  STABLE_MASTER_DATE=`date -d @$STABLE_MASTER_TIMESTAMP`
+  COMMIT_TO_DEPLOY_DATE=`date -d @$COMMIT_TO_DEPLOY_TIMESTAMP`
   LATEST_PRODUCTION_DATE=`date -d @$LATEST_PRODUCTION_TIMESTAMP`
-  echo "Latest production ($LATEST_PRODUCTION: $LATEST_PRODUCTION_DATE) is more recent than stable master ($STABLE_MASTER: $STABLE_MASTER_DATE) : skipping deployment."
+  echo "Latest production ($LATEST_PRODUCTION: $LATEST_PRODUCTION_DATE) is more recent than stable master ($COMMIT_TO_DEPLOY: $COMMIT_TO_DEPLOY_DATE) : skipping deployment."
   exit 0
 fi
 
@@ -52,14 +52,14 @@ git config --global user.name "Unlock Deployer"
 
 echo "Checking master out 4 days ago into new branch"
 BRANCH="production-$(date +%Y%m%d-%H%M%S)"
-git checkout -b $BRANCH $STABLE_MASTER
+git checkout -b $BRANCH $COMMIT_TO_DEPLOY
 
 echo "Diffing versus latest production"
 LATEST_PRODUCTION=`git rev-parse origin/production`
 git reset --soft $LATEST_PRODUCTION
 
 echo "Committing diff"
-COMMIT_MESSAGE="Automated deploy as of commit:$STABLE_MASTER"
+COMMIT_MESSAGE="Automated deploy as of commit:$COMMIT_TO_DEPLOY"
 git commit -m "$COMMIT_MESSAGE" -a --no-verify
 
 echo "Push new production branch"
@@ -69,7 +69,7 @@ echo "Open pull request"
 MESSAGE="Production Automated Deploy $BRANCH
 
 This is a production deployment. Please treat with great caution!
-This deploys the code from master as of commit $STABLE_MASTER.
+This deploys the code from master as of commit $COMMIT_TO_DEPLOY.
 
 Reviewing code for this Pull Request is not practical, however, you are asked to check wether the current staging environment is stable and could be released. For this, follow these steps:
 
