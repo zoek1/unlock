@@ -61,9 +61,6 @@ will require database access.
 Locksmith's implementation is comprised of two components: an [Express middleware](https://expressjs.com/en/guide/using-middleware.html)
 and an [Express](https://expressjs.com/) application. 
 
-* The middleware manages the security concerns regarding the validity of a request based upon its
- content and associated [JSON Web Token](#jwt-notes) (or `JWT` as it will be referred to going forward).
-
 *  The hosting application is effectively a standard CRUD application, which manages storage
  and editing of Lock details.
 
@@ -76,24 +73,12 @@ This layered approach of handling authentication concerns prior to reaching the 
 - Put **/lock/{lock address}** [Requires JWT] - Update details of Locks
 - GET /**lock/{lock address}** - Retrieve details of the requested Lock
 
-### JWT Notes
-
-An introduction to [JSON Web Tokens](https://jwt.io/introduction/) can be located here and is definitely worth a read.
- Locksmith assumes that requests to modify storage will be accompanied by a JWT that has been signed by the owner of the entity requesting to be updated.
 
 #### Header
 
 The header of the must include `"typ": "JWT"`. The `alg` component should also be included - a
  specific value isn't required but may be updated in the future to indicate signing with Ethereum's ECDSA
   or higher order class of signing algorithms.
-
-#### Payload
-
-The payload is expected to be JSON and include the following claims:
-
-* `iss` - Issuer (Ethereum address of the entity owner)
-* `iat` - Issued At Time
-* `exp` - Expiration Time 
 
 #### Signature
 
