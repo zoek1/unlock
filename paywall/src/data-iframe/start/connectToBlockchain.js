@@ -57,16 +57,19 @@ export default async function connectToBlockchain({
     readOnlyProvider,
     blockTime,
     requiredConfirmations,
+    window,
+    onChange,
   })
 
   // sets up key purchase as available
   setPurchaseKeyCallback(
     makePurchaseCallback({
+      window,
+      locksmithHost,
       walletService,
       web3Service,
       requiredConfirmations,
       update: onChange,
-      window,
     })
   )
 

@@ -4,9 +4,8 @@ import { setAccount, setAccountBalance, pollForAccountChange } from './account'
 import getLocks from './getLocks'
 import getKeys from './getKeys'
 import locksmithTransactions from './locksmithTransactions'
-import { processKeyPurchaseTransactions } from './purchaseKey'
-import { TRANSACTION_TYPES } from '../../constants'
 import ensureWalletReady from './ensureWalletReady'
+import web3ServiceHub from './web3ServiceHub'
 
 /**
  * @param {string} unlockAddress the ethereum address of the current Unlock contract
@@ -32,48 +31,18 @@ export function setupWeb3Service({
   readOnlyProvider,
   blockTime,
   requiredConfirmations,
+  onChange,
+  window,
 }) {
-  return new Web3Service({
+  const web3Service = new Web3Service({
     unlockAddress,
     readOnlyProvider,
     blockTime,
     requiredConfirmations,
   })
-}
-
-/**
- * This is used to create the callback that will be used by the postOfficeListener to respond to
- * POST_MESSAGE_CONFIG from the main window. This function assumes that the config was
- * already validated by the postOffice
- *
- * @param {web3Service} web3Service used to retrieve locks, and keys
- * @param {walletService} walletService used to ensure the user account is known prior to key/transaction retrieval
- * @param {string} locksmithHost the endpoint for locksmith
- * @param {Function} onChange the change callback, which is used by the data iframe to cache data and pass it to the
- *                            main window
- * @param {number} requiredConfirmations the minimum number of confirmations needed to consider a key purchased
- * @returns {Function} a callback that accepts the paywall config, and retrieves all chain data in response
- */
-export function getSetConfigCallback({
-  web3Service,
-  walletService,
-  locksmithHost,
-  onChange,
-  window,
-  requiredConfirmations,
-}) {
-  return config => {
-    const locksToRetrieve = Object.keys(config.locks)
-    retrieveChainData({
-      locksToRetrieve,
-      web3Service,
-      walletService,
-      window,
-      locksmithHost,
-      onChange,
-      requiredConfirmations,
-    })
-  }
+  // start listening for transaction updates and errors
+  web3ServiceHub({ web3Service, onChange, window })
+  return web3Service
 }
 
 /**
@@ -92,32 +61,20 @@ export async function retrieveChainData({
   window,
   locksmithHost,
   onChange,
-  requiredConfirmations,
 }) {
   onChange({ locks: await getLocks({ locksToRetrieve, web3Service }) })
 
   ensureWalletReady(walletService)
-  const [keys, transactions] = await Promise.all([
+  const [keys] = await Promise.all([
     getKeys({ walletService, locks: locksToRetrieve, web3Service }),
-    locksmithTransactions(window, locksmithHost, web3Service, walletService),
+    locksmithTransactions({
+      window,
+      locksmithHost,
+      web3Service,
+      walletService,
+    }),
   ])
-  Object.values(transactions).forEach(transaction => {
-    if (transaction.type === TRANSACTION_TYPES.KEY_PURCHASE) {
-      processKeyPurchaseTransactions({
-        walletService,
-        web3Service,
-        startingTransactions: transactions,
-        startingKey: keys[transaction.lock],
-        lockAddress: transaction.lock,
-        requiredConfirmations,
-        walletAction: () => onChange({ walletModal: true }),
-        update: onChange,
-      }).catch(error => {
-        onChange({ error })
-      })
-    }
-  })
-  return { keys, transactions }
+  return { keys }
 }
 
 /**
