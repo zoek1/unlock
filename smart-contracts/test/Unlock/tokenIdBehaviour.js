@@ -18,6 +18,7 @@ contract('Unlock / upgrades', accounts => {
   const keyOwner = accounts[2]
   const keyOwner3 = accounts[3]
   const keyOwner4 = accounts[4]
+  const keyOwner5 = accounts[5]
   const keyPrice = Units.convert('0.01', 'eth', 'wei')
   let lockV4
 
@@ -37,7 +38,7 @@ contract('Unlock / upgrades', accounts => {
     // Create Lock
     const lockTx = await unlock.methods
       .createLock(
-        60 * 1 * 1, // expirationDuration 1 hr
+        60 * 60 * 24, // expirationDuration 1 day
         Web3Utils.padLeft(0, 40), // token address
         keyPrice,
         5, // maxNumberOfKeys
@@ -59,7 +60,7 @@ contract('Unlock / upgrades', accounts => {
     })
   })
 
-  describe('Expired key token ID', () => {
+  describe('Purchases', () => {
     it('should still have a tokenId of 1 after expiration', async () => {
       await lockV4.methods.expireKeyFor(keyOwner).send({
         from: lockOwner,
@@ -118,6 +119,30 @@ contract('Unlock / upgrades', accounts => {
       let tokenId4 = await lockV4.methods.getTokenIdFor(keyOwner4).call()
       assert.equal(tokenId3, 2)
       assert.equal(tokenId4, 3)
+    })
+  })
+
+  describe('Transfers', () => {
+    it('transfering a key to a brand new owner should also transfer the tokenID', async () => {
+      let hasValidKey4 = await lockV4.methods.getHasValidKey(keyOwner4).call()
+      assert.equal(hasValidKey4, true)
+      await lockV4.methods
+        .transferFrom(keyOwner4, keyOwner5, 3)
+        .send({ from: keyOwner4, gas: 4000000 })
+      let tokenId5 = await lockV4.methods.getTokenIdFor(keyOwner5).call()
+      assert.equal(tokenId5, 3)
+    })
+
+    it('when a valid key owner receives a second key', async () => {
+      let hasValidKey3 = await lockV4.methods.getHasValidKey(keyOwner3).call()
+      assert.equal(hasValidKey3, true)
+      let hasValidKey5 = await lockV4.methods.getHasValidKey(keyOwner5).call()
+      assert.equal(hasValidKey5, true)
+      await lockV4.methods
+        .transferFrom(keyOwner3, keyOwner5, 2)
+        .send({ from: keyOwner3, gas: 4000000 })
+      let tokenId5 = await lockV4.methods.getTokenIdFor(keyOwner5).call()
+      assert.equal(tokenId5, 3) // tokenID does not change for recipient who has a valid key already
     })
   })
 
