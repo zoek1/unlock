@@ -58,20 +58,29 @@ contract('Unlock / upgrades', accounts => {
   })
 
   describe('Expired key token ID', () => {
-    it('key should be expired', async () => {
+    it('should still have a tokenId of 1 after expiration', async () => {
       await lockV4.methods.expireKeyFor(keyOwner).send({
         from: lockOwner,
       })
       let hasValidKey = await lockV4.methods.getHasValidKey(keyOwner).call()
-      assert.equal(hasValidKey, false)
-    })
-
-    it('should still have a tokenId of 1', async () => {
       let isKeyOwner = await lockV4.methods.isKeyOwner(1, keyOwner).call()
+      assert.equal(hasValidKey, false)
       assert.equal(isKeyOwner, true)
     })
 
     it('purchasing another key should not change the tokenId', async () => {
+      await lockV4.methods.purchaseFor(keyOwner).send({
+        value: keyPrice,
+        from: keyOwner,
+        gas: 4000000,
+      })
+      let tokenId = await lockV4.methods.getTokenIdFor(keyOwner).call()
+      assert.equal(tokenId, 1)
+    })
+
+    it('extending the key should not change the tokenID', async () => {
+      let hasValidKey = await lockV4.methods.getHasValidKey(keyOwner).call()
+      assert.equal(hasValidKey, true)
       await lockV4.methods.purchaseFor(keyOwner).send({
         value: keyPrice,
         from: keyOwner,
