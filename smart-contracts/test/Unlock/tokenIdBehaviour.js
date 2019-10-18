@@ -144,6 +144,27 @@ contract('Unlock / upgrades', accounts => {
       let tokenId5 = await lockV4.methods.getTokenIdFor(keyOwner5).call()
       assert.equal(tokenId5, 3) // tokenID does not change for recipient who has a valid key already
     })
+
+    it('when the owner of an expired key receives a second key', async () => {
+      let hasValidKey = await lockV4.methods.getHasValidKey(keyOwner).call()
+      let tokenId = await lockV4.methods.getTokenIdFor(keyOwner).call()
+      assert.equal(hasValidKey, true)
+      assert.equal(tokenId, 1)
+      await lockV4.methods.expireKeyFor(keyOwner5).send({
+        from: lockOwner,
+      })
+      let hasValidKey5 = await lockV4.methods.getHasValidKey(keyOwner5).call()
+      assert.equal(hasValidKey5, false)
+      await lockV4.methods
+        .transferFrom(keyOwner, keyOwner5, 1)
+        .send({ from: keyOwner, gas: 4000000 })
+      hasValidKey5 = await lockV4.methods.getHasValidKey(keyOwner5).call()
+      let tokenId5 = await lockV4.methods.getTokenIdFor(keyOwner5).call()
+      hasValidKey = await lockV4.methods.getHasValidKey(keyOwner).call()
+      assert.equal(hasValidKey5, true)
+      assert.equal(tokenId5, 1) // the tokenId is transferred in this case
+      assert.equal(hasValidKey, false)
+    })
   })
 
   describe('latest', () => {
