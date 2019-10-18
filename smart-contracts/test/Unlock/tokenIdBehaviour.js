@@ -7,9 +7,6 @@ ZWeb3.initialize(web3.currentProvider)
 const UnlockV4 = Contracts.getFromNodeModules('unlock-abi-1-1', '../../Unlock')
 const PublicLockV4 = require('unlock-abi-1-1/PublicLock')
 
-const UnlockLatest = Contracts.getFromLocal('Unlock')
-const PublicLockLatest = Contracts.getFromLocal('PublicLock')
-
 let project, proxy, unlock
 
 contract('Unlock / upgrades', accounts => {
@@ -164,58 +161,6 @@ contract('Unlock / upgrades', accounts => {
       assert.equal(hasValidKey5, true)
       assert.equal(tokenId5, 1) // the tokenId is transferred in this case
       assert.equal(hasValidKey, false)
-    })
-  })
-
-  describe('latest', () => {
-    before(async () => {
-      await project.upgradeProxy(proxy.address, UnlockLatest)
-      unlock = await UnlockLatest.at(proxy.address)
-      const lock = await PublicLockLatest.new({
-        from: unlockOwner,
-        gas: 6700000,
-      })
-      await unlock.methods
-        .configUnlock(
-          lock.address,
-          await unlock.methods.globalTokenSymbol().call(),
-          await unlock.methods.globalBaseTokenURI().call()
-        )
-        .send({
-          from: unlockOwner,
-        })
-    })
-
-    describe('Using latest version after an upgrade', () => {
-      let lockLatest
-
-      before(async () => {
-        // Create a new Lock
-        const lockTx = await unlock.methods
-          .createLock(
-            60 * 60 * 24, // expirationDuration 1 day
-            Web3Utils.padLeft(0, 40),
-            keyPrice,
-            5, // maxNumberOfKeys
-            'After-Upgrade Lock'
-          )
-          .send({
-            from: lockOwner,
-            gas: 6000000,
-          })
-        // THIS API IS LIKELY TO BREAK BECAUSE IT ASSUMES SO MUCH
-        const evt = lockTx.events.NewLock
-        lockLatest = await PublicLockLatest.at(evt.returnValues.newLockAddress)
-
-        // Buy Key
-        await lockLatest.methods
-          .purchase(0, keyOwner, web3.utils.padLeft(0, 40), [])
-          .send({
-            value: keyPrice,
-            from: keyOwner,
-            gas: 4000000,
-          })
-      })
     })
   })
 })
