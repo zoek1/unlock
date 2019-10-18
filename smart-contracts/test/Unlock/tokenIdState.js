@@ -58,14 +58,14 @@ contract('Unlock / upgrades', accounts => {
   })
 
   describe('Purchases', () => {
-    it('should still have a tokenId of 1 after expiration', async () => {
+    it('should still have the same tokenId after expiration', async () => {
       await lockV4.methods.expireKeyFor(keyOwner).send({
         from: lockOwner,
       })
       let hasValidKey = await lockV4.methods.getHasValidKey(keyOwner).call()
       let isKeyOwner = await lockV4.methods.isKeyOwner(1, keyOwner).call()
-      assert.equal(hasValidKey, false)
-      assert.equal(isKeyOwner, true)
+      assert.equal(hasValidKey, false) // keyOwner's key is no longer valid
+      assert.equal(isKeyOwner, true) // keyOwner is still considered to be the owner of the key with the tokenId "1"
     })
 
     it('purchasing another key should not change the tokenId', async () => {
@@ -127,7 +127,7 @@ contract('Unlock / upgrades', accounts => {
         .transferFrom(keyOwner4, keyOwner5, 3)
         .send({ from: keyOwner4, gas: 4000000 })
       let tokenId5 = await lockV4.methods.getTokenIdFor(keyOwner5).call()
-      assert.equal(tokenId5, 3)
+      assert.equal(tokenId5, 3) // the tokenId is transferred in this case
     })
 
     it('when a valid key owner receives a second key', async () => {
