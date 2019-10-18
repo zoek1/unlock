@@ -16,6 +16,8 @@ contract('Unlock / upgrades', accounts => {
   const unlockOwner = accounts[9]
   const lockOwner = accounts[1]
   const keyOwner = accounts[2]
+  const keyOwner3 = accounts[3]
+  const keyOwner4 = accounts[4]
   const keyPrice = Units.convert('0.01', 'eth', 'wei')
   let lockV4
 
@@ -88,6 +90,34 @@ contract('Unlock / upgrades', accounts => {
       })
       let tokenId = await lockV4.methods.getTokenIdFor(keyOwner).call()
       assert.equal(tokenId, 1)
+    })
+
+    it('2 new purchases should not share tokenIDs', async () => {
+      await lockV4.methods.purchaseFor(keyOwner3).send({
+        value: keyPrice,
+        from: keyOwner,
+        gas: 4000000,
+      })
+      await lockV4.methods.purchaseFor(keyOwner4).send({
+        value: keyPrice,
+        from: keyOwner,
+        gas: 4000000,
+      })
+      let tokenId3 = await lockV4.methods.getTokenIdFor(keyOwner3).call()
+      let tokenId4 = await lockV4.methods.getTokenIdFor(keyOwner4).call()
+      assert.equal(tokenId3, 2)
+      assert.equal(tokenId4, 3)
+    })
+
+    it('2 new key extensions should not share tokenIDs', async () => {
+      let hasValidKey3 = await lockV4.methods.getHasValidKey(keyOwner3).call()
+      let hasValidKey4 = await lockV4.methods.getHasValidKey(keyOwner4).call()
+      assert.equal(hasValidKey3, true)
+      assert.equal(hasValidKey4, true)
+      let tokenId3 = await lockV4.methods.getTokenIdFor(keyOwner3).call()
+      let tokenId4 = await lockV4.methods.getTokenIdFor(keyOwner4).call()
+      assert.equal(tokenId3, 2)
+      assert.equal(tokenId4, 3)
     })
   })
 
