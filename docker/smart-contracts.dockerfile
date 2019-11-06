@@ -17,7 +17,7 @@ COPY --chown=node smart-contracts/ /home/unlock/smart-contracts/.
 RUN npm run build
 
 # Install git for codechecks integration
-RUN apt-get update && apt-get install -y git
+RUN apt update && apt install -y git
 
 # Copy in the .git directory for codechecks integration
 RUN mkdir /home/unlock/.git
