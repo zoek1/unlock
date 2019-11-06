@@ -18,4 +18,4 @@ RUN npm run build
 
 # Copy in the .git directory for codechecks integration
 RUN mkdir /home/unlock/.git
-COPY --chown=node .git/* /home/unlock/.git/.
+COPY --chown=node .git/* /home/unlock/.git/
