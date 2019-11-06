@@ -19,3 +19,6 @@ RUN npm run build
 # Copy in the .git directory for codechecks integration
 RUN mkdir /home/unlock/.git
 COPY --chown=node .git/* /home/unlock/.git/
+
+# Install git for codechecks integration
+RUN apt-get update && apt-get install -y git
