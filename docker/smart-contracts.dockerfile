@@ -16,12 +16,7 @@ WORKDIR /home/unlock/smart-contracts
 COPY --chown=node smart-contracts/ /home/unlock/smart-contracts/.
 RUN npm run build
 
-# Install git for codechecks integration
-USER root
-RUN apk add --no-cache git
-USER node
-
 # Copy in the .git directory for codechecks integration
 RUN mkdir /home/unlock/.git
-COPY --chown=node .git/* /home/unlock/.git/
+COPY --chown=node .git/ /home/unlock/.git/
 
