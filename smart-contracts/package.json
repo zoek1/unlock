@@ -24,6 +24,7 @@
     "ethereumjs-units": "0.2.0",
     "ganache-cli": "6.7.0",
     "hardlydifficult-ethereum-contracts": "0.6.8",
+    "solidity-coverage": "^0.7.0-beta.2",
     "solium": "1.2.5",
     "truffle": "5.0.44",
     "truffle-assertions": "0.9.2",
@@ -53,13 +54,14 @@
     "test": "cross-env NODE_ENV=test truffle test --network development",
     "lint": "solium -d ./contracts/ && eslint --ext .ts,.js test/",
     "dev": "npm run lint && npm run build && npm run test",
-    "ci": "npm run test && npm run lint",
+    "ci": "npm run test && npm run lint && npm run coverage",
     "build": "truffle compile --all",
     "ganache": "ganache-cli --mnemonic \"hello unlock save the web\"",
     "zos": "openzeppelin",
     "flatten": "(truffle-flattener contracts/PublicLock.sol > build/PublicLock-Flattened.sol) && (echo Wrote file: build/PublicLock-Flattened.sol)",
     "verify": "truffle run verify",
-    "debug": "truffle debug"
+    "debug": "truffle debug",
+    "coverage": "truffle run coverage"
   },
   "author": "",
   "license": "ISC"
