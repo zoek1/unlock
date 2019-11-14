@@ -97,6 +97,12 @@ module.exports = {
       port: 8545,
       network_id: '*', // Match any network id
     },
+    soliditycoverage: {
+      // used for solidity-coverage
+      host: 'http://127.0.0.1',
+      port: 8555,
+      network_id: '*', // Match any network id
+    },
     rinkeby: {
       provider: rinkebyProvider,
       network_id: '4', // Network Id for Rinkeby
